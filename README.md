@@ -11,9 +11,9 @@
 
 本 repo 的維護者負責「行銷公會的活動草稿、來源引用與人工分享紀錄工具。」這個模組；公會職稱與自填 GitHub slug 不授予寫入權。
 
-程式／內容入口：[src/index.mjs](src/index.mjs)、[services/campaign-worker/](services/campaign-worker/)、[services/publication-worker/](services/publication-worker/)、[services/media-worker/](services/media-worker/)、[packages/channel-adapters/](packages/channel-adapters/)。協作先讀 [CONTRIBUTING.md](CONTRIBUTING.md)，讓 Agent 讀 [AGENTS.md](AGENTS.md)；從[本倉 Issues](https://github.com/FreeTWAI-AI/freedom-growth-automation/issues)認領、[查看既有 PR](https://github.com/FreeTWAI-AI/freedom-growth-automation/pulls)避免重工。
+程式／內容入口：[src/index.mjs](src/index.mjs)、[services/campaign-worker/](services/campaign-worker/)、[services/publication-worker/](services/publication-worker/)、[services/media-worker/](services/media-worker/)、[packages/channel-adapters/](packages/channel-adapters/)。協作先讀 [CONTRIBUTING.md](CONTRIBUTING.md)，讓 Agent 讀 [AGENTS.md](AGENTS.md)；從[本倉 Issues](https://github.com/FreeTWAI/freedom-growth-automation/issues)認領、[查看既有 PR](https://github.com/FreeTWAI/freedom-growth-automation/pulls)避免重工。
 
-活動與分享紀錄在中央平台；這裡組合／預覽公開或已授權資料。不保存會員 DB；文字 preview 不代表已發布、已送達或已有成效。 跨 repo 的協定由[中央平台](https://github.com/FreeTWAI-AI/freedom-platform)維護。
+活動與分享紀錄在中央平台；這裡組合／預覽公開或已授權資料。不保存會員 DB；文字 preview 不代表已發布、已送達或已有成效。 跨 repo 的協定由[中央平台](https://github.com/FreeTWAI/freedom-platform)維護。
 <!-- freedom-repository-guide:end -->
 
 行銷模組的可重用模板與 Platform API client helpers。這個 repo 是
@@ -117,5 +117,5 @@ consumer 與 named broker capability；不直接連 Platform DB，也不存長�
 secret。現有 draft API 不等於這套尚未啟用的 job 協定。
 
 中央架構來源：
-[Platform repo 與 ownership](https://github.com/FreeTWAI-AI/freedom-platform/blob/main/docs/platform-plan/02-architecture-repositories.md)、
-[模組擴建設計](https://github.com/FreeTWAI-AI/freedom-platform/blob/main/docs/development/module-expansion-design.md)。
+[Platform repo 與 ownership](https://github.com/FreeTWAI/freedom-platform/blob/main/docs/platform-plan/02-architecture-repositories.md)、
+[模組擴建設計](https://github.com/FreeTWAI/freedom-platform/blob/main/docs/development/module-expansion-design.md)。
