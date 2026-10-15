@@ -29,11 +29,23 @@ function items(result, operationId) {
 export async function loadCampaignWorkspace(client) {
   requireClient(client);
   const operations = ['listCampaigns', 'listProjects', 'listSupplierProducts'];
-  const result = await Promise.all(operations.map(operationId => client.call(operationId)));
+  const result = await Promise.all([
+    client.call('listCampaigns', { query: { limit: 50, offset: 0 } }),
+    client.call('listProjects'), client.call('listSupplierProducts'),
+  ]);
+  const campaigns = [...items(result[0], operations[0])];
+  const projects = items(result[1], operations[1]);
+  const supplierProducts = items(result[2], operations[2]);
+  let page = result[0], offset = 0;
+  while (page.next_offset !== null) {
+    const nextOffset = page.next_offset;
+    if (!Number.isSafeInteger(nextOffset) || nextOffset <= offset) throw new TypeError('listCampaigns returned an incompatible next_offset.');
+    page = await client.call('listCampaigns', { query: { limit: 50, offset: nextOffset } });
+    campaigns.push(...items(page, operations[0]));
+    offset = nextOffset;
+  }
   return {
-    campaigns: items(result[0], operations[0]),
-    projects: items(result[1], operations[1]),
-    supplierProducts: items(result[2], operations[2]),
+    campaigns, projects, supplierProducts,
   };
 }
 

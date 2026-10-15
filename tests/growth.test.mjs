@@ -14,13 +14,60 @@ const sourceId = '00000000-0000-4000-8000-000000000003';
 test('workspace uses the three pinned operations and preserves authoritative API rows', async () => {
   const rows = { listCampaigns: [fixture], listProjects: [{ project_id: sourceId }], listSupplierProducts: [{ product_id: sourceId }] };
   const calls = [];
-  const result = await loadCampaignWorkspace({ async call(operation) { calls.push(operation); return { items: rows[operation] }; } });
+  const result = await loadCampaignWorkspace({ async call(operation) { calls.push(operation); return { items: rows[operation], ...(operation === 'listCampaigns' ? { next_offset: null } : {}) }; } });
   assert.deepEqual(calls.sort(), Object.keys(rows).sort());
   assert.deepEqual(result, { campaigns: rows.listCampaigns, projects: rows.listProjects, supplierProducts: rows.listSupplierProducts });
 });
 
 test('incompatible API envelopes fail instead of looking like an empty workspace', async () => {
   await assert.rejects(loadCampaignWorkspace({ async call() { return []; } }), /incompatible response/);
+});
+
+test('workspace loads all private campaigns through empty and exact-page endings', async () => {
+  for (const count of [0, 50, 101]) {
+    const campaigns = Array.from({ length: count }, (_, index) => ({ ...fixture, campaign_id: `campaign-${index}` }));
+    const projects = [{ project_id: sourceId }], supplierProducts = [{ product_id: sourceId }];
+    const offsets = [], pages = [];
+    const result = await loadCampaignWorkspace({ async call(operation, options) {
+      if (operation === 'listProjects') return { items: projects };
+      if (operation === 'listSupplierProducts') return { items: supplierProducts };
+      assert.equal(operation, 'listCampaigns');
+      assert.equal(options.query.limit, 50);
+      const { offset } = options.query;
+      offsets.push(offset);
+      const page = { items: campaigns.slice(offset, offset + 50), next_offset: offset + 50 < count ? offset + 50 : null };
+      pages.push(page);
+      return page;
+    } });
+    assert.deepEqual(result, { campaigns, projects, supplierProducts });
+    assert.deepEqual(offsets, count > 50 ? [0, 50, 100] : [0]);
+    assert.equal(pages[0].items.length, Math.min(count, 50));
+  }
+});
+
+test('a later campaign authorization failure rejects the whole workspace without retry', async () => {
+  const failure = Object.assign(new Error('session expired'), { status: 401 });
+  const offsets = [];
+  const client = { async call(operation, options) {
+    if (operation !== 'listCampaigns') return { items: [] };
+    offsets.push(options.query.offset);
+    if (options.query.offset === 0) return { items: [fixture], next_offset: 50 };
+    throw failure;
+  } };
+  await assert.rejects(loadCampaignWorkspace(client), error => error === failure);
+  assert.deepEqual(offsets, [0, 50]);
+});
+
+test('invalid campaign continuation rejects instead of returning partial drafts or looping', async () => {
+  for (const next_offset of [undefined, 0, -1, '50', 1.5]) {
+    let campaignReads = 0;
+    await assert.rejects(loadCampaignWorkspace({ async call(operation) {
+      if (operation !== 'listCampaigns') return { items: [] };
+      campaignReads++;
+      return { items: [fixture], next_offset };
+    } }), /next_offset/);
+    assert.equal(campaignReads, 1);
+  }
 });
 
 test('campaign creation forwards exactly the caller command and retry key', async () => {
