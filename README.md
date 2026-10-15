@@ -82,7 +82,7 @@ const revised = await reviseCampaignDraft(client, saved, {
 
 | Helper | SDK operation | 資料／一致性 |
 | --- | --- | --- |
-| `loadCampaignWorkspace(client)` | `listCampaigns`, `listProjects`, `listSupplierProducts` | 回傳 `{campaigns, projects, supplierProducts}`；API `{items}` 格式不符會失敗 |
+| `loadCampaignWorkspace(client)` | `listCampaigns`, `listProjects`, `listSupplierProducts` | 活動依 `next_offset` 每頁最多 50 筆讀完，回傳完整 `{campaigns, projects, supplierProducts}`；API 格式不符會失敗 |
 | `createCampaignDraft(client, body, options)` | `createCampaign` | `options.idempotencyKey` 必填；Platform 驗證來源權限並保存確切來源版本 |
 | `reviseCampaignDraft(client, campaign, body, options)` | `reviseCampaign` | 傳 `params.id`、key、`version`；只修改文案，原始來源快照保留 |
 | `recordManualShare(client, campaign, body, options)` | `recordShare` | 傳 `params.id`、key、`version`；紀錄為 `self_reported`，不代表已核實 |
@@ -91,6 +91,8 @@ const revised = await reviseCampaignDraft(client, saved, {
 `options.version`。衝突與網路錯誤原樣向上傳遞，不會自動重試、換 key 或覆蓋
 別人的更新。**重試必須使用相同內容、版本與 key**；內容變更是新命令，應用新 key。
 來源專案列表可能包含別人的作品；建立草稿時仍由 Platform 檢查來源管理權。
+
+活動清單讀取到 `next_offset: null` 才回傳工作區；空清單正常回傳，後續任一頁被拒或失敗則整次讀取失敗，不返回部分草稿或自動重試。應使用更新後的 pinned client 核對協定，不略過版本相容性檢查。
 
 Browser session 必須走 Platform 同源入口或經授權的同源 reverse proxy；本 repo
 沒有開放任意 CORS。不要把 staging 示範登入當成正式外部用戶 API 授權，也不要
