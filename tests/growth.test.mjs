@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
   loadCampaignWorkspace, createCampaignDraft, reviseCampaignDraft, recordManualShare,
-  prepareCampaignDraft, previewPublication, renderPlainPreview,
+  prepareCampaignDraft, previewPublication, renderPlainPreview, renderLinePreview,
 } from '../src/index.mjs';
 
 const fixture = JSON.parse(await readFile(new URL('./fixtures/campaign.json', import.meta.url), 'utf8'));
@@ -107,6 +107,13 @@ test('writes without an explicit retry key and revisions without a usable versio
   }
 });
 
+test('client helpers reject operations with missing or invalid client or campaign_id', async () => {
+  await assert.rejects(loadCampaignWorkspace(null), /Platform client/);
+  await assert.rejects(loadCampaignWorkspace({}), /Platform client/);
+  await assert.rejects(reviseCampaignDraft({ call: () => {} }, null, content, { idempotencyKey: 'key' }), /campaign_id/);
+  await assert.rejects(reviseCampaignDraft({ call: () => {} }, { campaign_id: '' }, content, { idempotencyKey: 'key' }), /campaign_id/);
+});
+
 test('conflicts and ambiguous network failures propagate without automatic command retries', async () => {
   for (const failure of [Object.assign(new Error('version_conflict'), { status: 412 }), new TypeError('fetch failed')]) {
     let requests = 0;
@@ -165,6 +172,19 @@ test('preview refuses unpinned drafts and unsupported channels', () => {
     assert.throws(() => previewPublication(invalid), /source_snapshot/);
   }
   assert.throws(() => previewPublication(fixture, { channel: 'send-now' }), /Supported local preview/);
+});
+
+test('previewPublication rejects missing campaign_id or invalid aggregate_version', () => {
+  assert.throws(() => previewPublication(null), /Preview a saved campaign/);
+  assert.throws(() => previewPublication({ ...fixture, campaign_id: null }), /Preview a saved campaign/);
+  assert.throws(() => previewPublication({ ...fixture, aggregate_version: null }), /Preview a saved campaign/);
+  assert.throws(() => previewPublication({ ...fixture, aggregate_version: 0 }), /Preview a saved campaign/);
+});
+
+test('render plain and line preview rejects invalid campaigns missing title or draft_text', () => {
+  assert.throws(() => renderPlainPreview(null), /title and draft_text/);
+  assert.throws(() => renderLinePreview({ title: 'A title' }), /title and draft_text/);
+  assert.throws(() => renderPlainPreview({ draft_text: 'A draft' }), /title and draft_text/);
 });
 
 test('media capability manifest cannot be interpreted as an active worker', async () => {
