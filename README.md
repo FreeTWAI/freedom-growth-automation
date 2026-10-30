@@ -109,6 +109,8 @@ Browser session 必須走 Platform 同源入口或經授權的同源 reverse pro
 | `services/media-worker/` | 明確標 `planned`、`executable:false` 的能力表，沒有 executable stub |
 | `tests/` | 命令／版本傳遞、重試邊界、錯誤傳遞與来源保留測試 |
 
+更詳細的系統架構與排程說明，請參見 [Architecture Guide](docs/architecture.md)。
+
 preview 中的 hash 從 Platform 回應保留，沒有在 client 端重新簽章或宣稱驗真。
 文字只能作純文字呈現，不可直接交給 `innerHTML`。LINE preview 並未驗證正式
 provider 請求限制、收件人或 channel 權限，不能直接視為可發送任務。
