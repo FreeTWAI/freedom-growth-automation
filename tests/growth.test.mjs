@@ -97,6 +97,21 @@ test('manual share recording preserves explicit version and is only a Platform c
   assert.deepEqual(calls, [['recordShare', { body, params: { id: fixture.campaign_id }, idempotencyKey: 'share-record-0001', version: 5 }]]);
 });
 
+test('manual share recording rejects invalid URLs, non-HTTP(S) protocols, and embedded credentials', async () => {
+  const client = { async call() { assert.fail('No request should be made.'); } };
+  const invalidUrls = [
+    'not_a_url',
+    'ftp://example.com/share',
+    'javascript:alert(1)',
+    'https://user:pass@example.com',
+    'http://user@example.com'
+  ];
+  for (const share_url of invalidUrls) {
+    const body = { channel: 'example', share_url };
+    await assert.rejects(recordManualShare(client, fixture, body, { idempotencyKey: 'share-record-fail' }), /share_url|URL/);
+  }
+});
+
 test('writes without an explicit retry key and revisions without a usable version never reach API', async () => {
   const client = { async call() { assert.fail('No request should be made.'); } };
   await assert.rejects(createCampaignDraft(client, content), /idempotencyKey/);
