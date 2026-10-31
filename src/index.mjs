@@ -64,7 +64,21 @@ export async function reviseCampaignDraft(client, campaign, body, options) {
 /** Record an already-shared URL as self-reported evidence; this does not publish it. */
 export async function recordManualShare(client, campaign, body, options) {
   requireClient(client);
-  return client.call('recordShare', { body, ...campaignOptions(campaign, options) });
+  const validatedBody = { ...body };
+  if (validatedBody.share_url) {
+    try {
+      const parsed = new URL(validatedBody.share_url);
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        throw new TypeError('share_url must use http: or https: protocol.');
+      }
+      if (parsed.username || parsed.password) {
+        throw new TypeError('share_url must not contain credentials.');
+      }
+    } catch (e) {
+      throw new TypeError(e.message || 'Invalid share_url.');
+    }
+  }
+  return client.call('recordShare', { body: validatedBody, ...campaignOptions(campaign, options) });
 }
 
 export { prepareCampaignDraft } from '../services/campaign-worker/index.mjs';
