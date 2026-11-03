@@ -33,7 +33,7 @@ export async function loadCampaignWorkspace(client) {
     client.call('listCampaigns', { query: { limit: 50, offset: 0 } }),
     client.call('listProjects'), client.call('listSupplierProducts'),
   ]);
-  const campaigns = [...items(result[0], operations[0])];
+  const campaigns = Array.from(items(result[0], operations[0]));
   const projects = items(result[1], operations[1]);
   const supplierProducts = items(result[2], operations[2]);
   let page = result[0], offset = 0;
@@ -41,7 +41,9 @@ export async function loadCampaignWorkspace(client) {
     const nextOffset = page.next_offset;
     if (!Number.isSafeInteger(nextOffset) || nextOffset <= offset) throw new TypeError('listCampaigns returned an incompatible next_offset.');
     page = await client.call('listCampaigns', { query: { limit: 50, offset: nextOffset } });
-    campaigns.push(...items(page, operations[0]));
+    for (const item of items(page, operations[0])) {
+      campaigns.push(item);
+    }
     offset = nextOffset;
   }
   return {
