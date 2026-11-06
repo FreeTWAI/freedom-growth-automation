@@ -1,14 +1,4 @@
-/**
- * Prepare an API command body locally. No job is claimed, saved, or published.
- *
- * @param {Object} draft - The draft parameters.
- * @param {string} draft.title - The campaign title (max 120 characters).
- * @param {string} draft.audience - The campaign audience description (max 1000 characters).
- * @param {string} draft.goal - The campaign goal (max 1000 characters).
- * @param {string} draft.draftText - The main text of the campaign draft (max 6000 characters).
- * @param {Object} draft.source - The source reference for the campaign (e.g. `oss_project`, `supplier_product`, `manual_brief`).
- * @returns {Object} The prepared command body for API submission.
- */
+/** Prepare an API command body locally. No job is claimed, saved, or published. */
 export function prepareCampaignDraft({ title, audience, goal, draftText, source } = {}) {
   const limits = { title: 120, audience: 1000, goal: 1000, draft_text: 6000 };
   const body = { title, audience, goal, draft_text: draftText };

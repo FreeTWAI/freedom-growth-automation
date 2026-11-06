@@ -25,12 +25,7 @@ function items(result, operationId) {
   return result.items;
 }
 
-/**
- * Read the signed-in member's drafts and available source selections.
- *
- * @param {Object} client - The pinned Platform client.
- * @returns {Promise<{campaigns: Array, projects: Array, supplierProducts: Array}>} A workspace object containing campaigns, projects, and supplier products.
- */
+/** Read the signed-in member's drafts and available source selections. */
 export async function loadCampaignWorkspace(client) {
   requireClient(client);
   const operations = ['listCampaigns', 'listProjects', 'listSupplierProducts'];
@@ -54,42 +49,19 @@ export async function loadCampaignWorkspace(client) {
   };
 }
 
-/**
- * The Platform checks source ownership and captures the immutable source version.
- *
- * @param {Object} client - The pinned Platform client.
- * @param {Object} body - The campaign draft payload to create.
- * @param {Object} options - Options including a required `idempotencyKey`.
- * @returns {Promise<Object>} The saved campaign returned by the Platform.
- */
+/** The Platform checks source ownership and captures the immutable source version. */
 export async function createCampaignDraft(client, body, options) {
   requireClient(client);
   return client.call('createCampaign', { body, ...mutationOptions(options) });
 }
 
-/**
- * Revisions edit draft content, never its source snapshot. Conflicts propagate.
- *
- * @param {Object} client - The pinned Platform client.
- * @param {Object} campaign - The existing saved campaign.
- * @param {Object} body - The updated campaign draft payload.
- * @param {Object} options - Options including a required `idempotencyKey` and an optional `version` (defaults to campaign.aggregate_version).
- * @returns {Promise<Object>} The updated campaign returned by the Platform.
- */
+/** Revisions edit draft content, never its source snapshot. Conflicts propagate. */
 export async function reviseCampaignDraft(client, campaign, body, options) {
   requireClient(client);
   return client.call('reviseCampaign', { body, ...campaignOptions(campaign, options) });
 }
 
-/**
- * Record an already-shared URL as self-reported evidence; this does not publish it.
- *
- * @param {Object} client - The pinned Platform client.
- * @param {Object} campaign - The existing saved campaign.
- * @param {Object} body - The manual share payload (e.g. { channel, share_url, note }).
- * @param {Object} options - Options including a required `idempotencyKey` and an optional `version`.
- * @returns {Promise<Object>} The updated campaign with the recorded share returned by the Platform.
- */
+/** Record an already-shared URL as self-reported evidence; this does not publish it. */
 export async function recordManualShare(client, campaign, body, options) {
   requireClient(client);
   return client.call('recordShare', { body, ...campaignOptions(campaign, options) });
