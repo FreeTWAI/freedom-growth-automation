@@ -1,6 +1,13 @@
 import { renderPlainPreview, renderLinePreview } from '../../packages/channel-adapters/index.mjs';
 
-/** Render locally while preserving the exact source observation saved by Platform. */
+/**
+ * Render locally while preserving the exact source observation saved by Platform.
+ *
+ * @param {Object} campaign - The saved campaign containing source_snapshot and hashes.
+ * @param {Object} [options] - Options for preview.
+ * @param {string} [options.channel='plain'] - The target channel for preview (e.g., 'plain' or 'line').
+ * @returns {Object} The generated preview structure containing the preserved source info and rendered content.
+ */
 export function previewPublication(campaign, { channel = 'plain' } = {}) {
   if (!campaign || typeof campaign.campaign_id !== 'string' || !Number.isSafeInteger(campaign.aggregate_version) || campaign.aggregate_version < 1) {
     throw new TypeError('Preview a saved campaign returned by Platform.');
