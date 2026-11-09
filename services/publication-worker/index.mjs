@@ -1,13 +1,15 @@
 import { renderPlainPreview, renderLinePreview } from '../../packages/channel-adapters/index.mjs';
 
+const SHA256_REGEX = /^[a-f0-9]{64}$/i;
+
 /** Render locally while preserving the exact source observation saved by Platform. */
 export function previewPublication(campaign, { channel = 'plain' } = {}) {
   if (!campaign || typeof campaign.campaign_id !== 'string' || !Number.isSafeInteger(campaign.aggregate_version) || campaign.aggregate_version < 1) {
     throw new TypeError('Preview a saved campaign returned by Platform.');
   }
   if (!campaign.source_snapshot || typeof campaign.source_snapshot !== 'object' || Array.isArray(campaign.source_snapshot)
-      || typeof campaign.source_sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(campaign.source_sha256)
-      || typeof campaign.content_sha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(campaign.content_sha256)) {
+      || typeof campaign.source_sha256 !== 'string' || !SHA256_REGEX.test(campaign.source_sha256)
+      || typeof campaign.content_sha256 !== 'string' || !SHA256_REGEX.test(campaign.content_sha256)) {
     throw new TypeError('The saved campaign must include its source_snapshot, source_sha256 and content_sha256.');
   }
   const render = channel === 'plain' ? renderPlainPreview : channel === 'line' ? renderLinePreview : null;
